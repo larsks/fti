@@ -10,6 +10,11 @@ import xappy
 from xappy import Field
 import baker
 
+def init_logging(verbose):
+    logging.basicConfig(
+            level=logging.INFO if verbose else logging.WARN,
+            format='%(asctime)s %(name)s [%(levelname)s]: %(message)s')
+
 def open_db_write(index):
     logging.info('opening database connection')
     db = xappy.IndexerConnection(index)
@@ -41,16 +46,22 @@ def normalize_path(path):
     path = os.path.normpath(path)
     return path
 
-@baker.command(shortopts={'index': 'i', 'source': 's'})
-def index(index='.fti', source='.'):
+@baker.command(shortopts={
+    'index': 'i',
+    'source': 's',
+    'verbose':'v',
+    'git': 'G',
+    })
+def index(index='.fti', source='.', verbose=False, git=False):
     '''Index a collection of documents.
     
     :param index: Path to index directory
     :param source: Path to document collection
     '''
 
-    index = normalize_path(index)
+    init_logging(verbose)
 
+    index = normalize_path(index)
     db = open_db_write(index)
 
     logging.info('indexing files')
@@ -58,6 +69,9 @@ def index(index='.fti', source='.'):
         dirpath = normalize_path(dirpath)
         if dirpath == index:
             continue
+
+        if '.git' in dirnames and not git:
+            dirnames.remove('.git')
 
         for filename in filenames:
             filepath = os.path.join(dirpath, filename)
@@ -92,8 +106,16 @@ def index(index='.fti', source='.'):
     db.flush()
     db.close()
 
-@baker.command(shortopts={'index': 'i'})
-def search(index='.fti', *terms):
+@baker.command(shortopts={'index': 'i', 'verbose': 'v'})
+def search(index='.fti', verbose=False, *terms):
+    '''Search an index and display matching files.
+
+    :param index: Path to index directory
+    :param verbose: Display verbose diagnostics if True
+    '''
+
+    init_logging(verbose)
+
     index = normalize_path(index)
     db = open_db_read(index)
 
@@ -114,8 +136,5 @@ def search(index='.fti', *terms):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s %(name)s [%(levelname)s]: %(message)s')
     baker.run()
 
