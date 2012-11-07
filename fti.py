@@ -10,9 +10,12 @@ import xappy
 from xappy import Field
 import baker
 
+logging.NOTICE = 25
+
 def init_logging(verbose):
+    logging.addLevelName(logging.NOTICE, 'notice') 
     logging.basicConfig(
-            level=logging.INFO if verbose else logging.WARN,
+            level=logging.INFO if verbose else logging.NOTICE,
             format='%(asctime)s %(name)s [%(levelname)s]: %(message)s')
 
 def open_db_write(index):
@@ -91,7 +94,7 @@ def index(index='.fti', source='.', verbose=False, git=False):
             except KeyError:
                 pass
 
-            logging.info('adding: %s' % filepath)
+            logging.log(logging.NOTICE, 'adding: %s' % filepath)
             doc = xappy.UnprocessedDocument()
             doc.id = filepath
             doc.fields.append(Field('path', filepath))
