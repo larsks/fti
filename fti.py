@@ -13,7 +13,7 @@ import baker
 logging.NOTICE = 25
 
 def init_logging(verbose):
-    logging.addLevelName(logging.NOTICE, 'notice') 
+    logging.addLevelName(logging.NOTICE, 'NOTICE') 
     logging.basicConfig(
             level=logging.INFO if verbose else logging.NOTICE,
             format='%(asctime)s %(name)s [%(levelname)s]: %(message)s')
